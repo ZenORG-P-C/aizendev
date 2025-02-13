@@ -18,12 +18,14 @@ This project is a command-line interface (CLI) application built with React and 
 ## Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/yourusername/example-command-line-ai.git
    cd example-command-line-ai
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    # or
@@ -41,6 +43,7 @@ This project is a command-line interface (CLI) application built with React and 
 ## Usage
 
 1. **Run the application**:
+
    ```bash
    npm start
    # or
@@ -68,4 +71,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [Ink](https://github.com/vadimdemedes/ink) for the CLI framework
 - [dotenv](https://github.com/motdotla/dotenv) for environment variable management
-- [axios](https://github.com/axios/axios) for HTTP requests 
+- [axios](https://github.com/axios/axios) for HTTP requests
