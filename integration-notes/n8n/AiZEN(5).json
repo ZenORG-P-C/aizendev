@@ -1,0 +1,187 @@
+{
+  "name": "AiZEN",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=- Mesage History: {{ $json.body.chatHistory\n    .filter(item => item.role === 'user' || item.role === 'assistant') // Filter for user and assistant roles\n    .reduce((acc, item) => {\n        // Count messages for each role\n        if (item.role === 'user') {\n            acc.userCount++;\n            acc.messages.push(`User message ${acc.userCount}: ${item.content}`);\n        } else if (item.role === 'assistant') {\n            acc.assistantCount++;\n            acc.messages.push(`Assistant message ${acc.assistantCount}: ${item.content}`);\n        }\n        return acc;\n    }, { userCount: 0, assistantCount: 0, messages: [] }) // Initialize counts and messages array\n    .messages.join('\\n'); }}\n\n- last user message to respond to: {{ $json.body.message }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        0,
+        -320
+      ],
+      "id": "aa15e606-08f6-4609-a17c-118d382f484d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1-distill-llama-70b",
+        "options": {
+          "maxTokensToSample": 128000,
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        20,
+        -100
+      ],
+      "id": "4fc2d2f5-dac9-4ef7-aca6-fe8a5ab15620",
+      "name": "Groq Chat Model",
+      "notesInFlow": true,
+      "credentials": {
+        "groqApi": {
+          "id": "lbb5l9gKxBjYgBxH",
+          "name": "Groq account"
+        }
+      },
+      "notes": "groq API with deepseek-r1-distill-70b and context window 128000 and temperature 0.5"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        -320
+      ],
+      "id": "e8e32c2b-3681-4dc5-a41f-fbb755893238",
+      "name": "Respond to Webhook",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e0b65ab0-7bbc-48c9-a1f5-ffe732348771",
+              "name": "think",
+              "value": "={{ $json.output.replaceAll('<think>\\n','').split('</think>')[0]}}",
+              "type": "string"
+            },
+            {
+              "id": "4e20a7ff-c004-4fbb-9370-25c9bf436a91",
+              "name": "output",
+              "value": "={{ $json.output.split('</think>\\n\\n')[1]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        340,
+        -320
+      ],
+      "id": "b65ab9e0-4be3-4f99-b19f-523c600a86a6",
+      "name": "join think and final output in a nice format"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8945ea14-4704-4ebb-9d10-509c9efdf2be",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        -320
+      ],
+      "id": "a0888e81-80ef-4adb-a61f-4fa56c8c4468",
+      "name": "Webhook",
+      "webhookId": "8945ea14-4704-4ebb-9d10-509c9efdf2be"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n            \"name\": \"messages\",\n            \"value\": {{ [  ...($json.body.chatHistory || []),  {    \"role\": \"user\",    \"content\": $json.body.message  }] }}\n          }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -140,
+        -320
+      ],
+      "id": "0d2e5439-4af4-460b-bc15-7088b912c1b7",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "join think and final output in a nice format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "join think and final output in a nice format": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "01e21aac-a6d8-4770-8478-7bf69338f00e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63ca7e7db2f6cbbd2d53fccaa0b264f92da97fa44945c655fe7ea8e54294d126"
+  },
+  "id": "MprfVef7rR7OcM1e",
+  "tags": []
+}
