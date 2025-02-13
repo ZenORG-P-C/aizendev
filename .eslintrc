@@ -1,0 +1,37 @@
+{
+  "env": {
+    "browser": false,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime"
+  ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "react-hooks"
+  ],
+  "settings": {
+    "react": {
+      "version": "18.3.1"
+    }
+  },
+  "rules": {
+    "react/prop-types": "off", // Optional: if you're using TypeScript or prefer to avoid prop-types
+    "react/react-in-jsx-scope": "off", // Since React 17, you don't need to import React in JSX files
+    "react/jsx-uses-react": "off", // React 17 and onwards, JSX no longer requires React import
+    "react/jsx-uses-vars": "warn", // Warn for unused variables inside JSX
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
+  }
+}
